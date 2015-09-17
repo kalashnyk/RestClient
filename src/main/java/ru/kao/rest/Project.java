@@ -86,7 +86,7 @@ public class Project {
 	public void setFullName(String fullName) {
 		this.fullName = fullName;
 	}
-
+	
 	public Project(Long ownerId, String fullName, Long forks, Long watchers, Long openIssues, Long size,
 			String language, Date updatedAt) {
 		this.ownerId = ownerId;
@@ -106,7 +106,7 @@ public class Project {
 		return String.format("Project [Cost = %.2f, Name = '%s']", cost, fullName);
 	}
 
-	private boolean diffDateInYears(Date updatedAt, Date currDate) {
+	public boolean diffDate(Date updatedAt, Date currDate) {
 		Calendar cal1 = Calendar.getInstance();
 		Calendar cal2 = Calendar.getInstance();
 
@@ -137,14 +137,14 @@ public class Project {
 		}
 
 		if (size != null) {
-			cost += (size / 1000) * 0.1;
+			cost += (size / 1024) * 0.1;
 		}
 
 		if (language != null && "JAVA".equals(language.toUpperCase())) {
 			cost += 5;
 		}
 
-		if (updatedAt != null && diffDateInYears(updatedAt, new Date())) {
+		if (updatedAt != null && diffDate(updatedAt, new Date())) {
 			cost -= 20;
 		}
 
