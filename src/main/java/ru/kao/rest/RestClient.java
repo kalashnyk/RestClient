@@ -23,45 +23,48 @@ public class RestClient {
 
 		int page = 1;
 		List<Project> listProject = new ArrayList<Project>();
-		
-		if(totalItems > 300){
-			totalItems = 300;
-			System.out.println("Maximum number of required elements " + totalItems);
-		}
 
 		while (totalItems > 0) {
-			JSONObject variants = RestService.getJSON(String.format("/search/repositories?q=%s&page=%s", query, page));
+			try {
+				JSONObject variants = RestService
+						.getJSON(String.format("/search/repositories?q=%s&page=%s", query, page));
 
-			Long totalCount = (Long) variants.get("total_count");
-			
-			JSONArray items = (JSONArray) variants.get("items");
+				Long totalCount = (Long) variants.get("total_count");
 
-			for (Object itemObject : items) {
-				JSONObject jItemObject = (JSONObject) itemObject;
+				JSONArray items = (JSONArray) variants.get("items");
+
+				for (Object itemObject : items) {
+					JSONObject jItemObject = (JSONObject) itemObject;
+
+					JSONObject owner = (JSONObject) jItemObject.get("owner");
+					Long ownerId = (Long) owner.get("id");
+					String fullName = (String) jItemObject.get("full_name");
+					Long forks = (Long) jItemObject.get("forks");
+					Long watchers = (Long) jItemObject.get("watchers");
+					Long openIssues = (Long) jItemObject.get("open_issues");
+					Long size = (Long) jItemObject.get("size");
+					String language = (String) jItemObject.get("language");
+					Date updatedAt = df.parse((String) jItemObject.get("updated_at"));
+
+					Project project = new Project(ownerId, fullName, forks, watchers, openIssues, size, language,
+							updatedAt);
+
+					listProject.add(project);
+
+					if (--totalItems == 0) {
+						break;
+					}
+				}
 				
-				JSONObject owner = (JSONObject) jItemObject.get("owner");
-				Long ownerId = (Long) owner.get("id");
-				String fullName = (String) jItemObject.get("full_name");
-				Long forks = (Long) jItemObject.get("forks");
-				Long watchers = (Long) jItemObject.get("watchers");
-				Long openIssues = (Long) jItemObject.get("open_issues");
-				Long size = (Long) jItemObject.get("size");
-				String language = (String) jItemObject.get("language");
-				Date updatedAt = df.parse((String) jItemObject.get("updated_at"));
-
-				Project project = new Project(ownerId, fullName, forks, watchers, openIssues, size, language,
-						updatedAt);
-
-				listProject.add(project);
-				
-				if(--totalItems == 0){
+				if (totalCount <= listProject.size()) {
 					break;
 				}
-			}
-			if (totalCount <= listProject.size()) {
+				page++;
+
+			} catch (RESTException e) {
+				System.err.println(e.getMessage());
 				break;
 			}
-			page++;
 		}
 
 		Collections.sort(listProject, new Comparator<Project>() {
@@ -71,7 +74,7 @@ public class RestClient {
 		});
 
 		int count = Math.min(10, listProject.size());
-		for(int i = 0; i < count; i++){
+		for (int i = 0; i < count; i++) {
 			System.out.println(listProject.get(i));
 		}
 	}

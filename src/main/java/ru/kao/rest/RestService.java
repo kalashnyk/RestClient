@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
+import java.util.Date;
 
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
@@ -22,19 +23,18 @@ public class RestService {
 	public static int requestCount = 0;
 	public static long lastRequestTime = System.currentTimeMillis();
 
-	public static JSONObject getJSON(String request) throws ParseException, MalformedURLException, IOException,
+	public static JSONObject getJSON(String request) throws RESTException, ParseException, MalformedURLException, IOException,
 			InterruptedException, net.minidev.json.parser.ParseException {
 		String jsonString = getContent(request);
 		return (JSONObject) PARSER.parse(jsonString);
 	}
 
-	public static String getContent(String request) throws MalformedURLException, IOException, InterruptedException {
-
-		if (requestCount == 30) { 
+	public static String getContent(String request) throws RESTException, MalformedURLException, IOException, InterruptedException {
+		if (requestCount == 10) {
 			long currentTime = System.currentTimeMillis();
 			long diff = currentTime - lastRequestTime;
-			if (diff < 1000) {
-				Thread.sleep(1000 - diff);
+			if (diff < 60000) {
+				Thread.sleep(60000 - diff);
 			}
 			lastRequestTime = System.currentTimeMillis();
 			requestCount = 0;
@@ -46,7 +46,6 @@ public class RestService {
 		httpConnection.setRequestProperty("Content-Type", "application/json");
 		requestCount++;
 
-		InputStream response = httpConnection.getInputStream();
 		int responseCode = httpConnection.getResponseCode();
 
 		if (responseCode != 200) {
@@ -55,9 +54,19 @@ public class RestService {
 				double sleepMillis = 1000 * sleepFloatingPoint;
 				Thread.sleep((long) sleepMillis);
 				return getContent(request);
+			} else if (responseCode == 403 && httpConnection.getHeaderField("X-RateLimit-Reset") != null) {
+				long reset = Long.valueOf(httpConnection.getHeaderField("X-RateLimit-Reset"));
+				Date dateFuture = new Date(reset * 1000);
+				long sleepFloatingPoint = dateFuture.getTime() - new Date().getTime();
+				Thread.sleep(sleepFloatingPoint);
+				return getContent(request);
+			} else if (responseCode == 422) {
+				throw new RESTException("Only the first 1000 search results are available");
 			}
 			throw new RuntimeException("Response code was not 200. Detected response was " + responseCode);
 		}
+
+		InputStream response = httpConnection.getInputStream();
 
 		String output;
 		Reader reader = null;

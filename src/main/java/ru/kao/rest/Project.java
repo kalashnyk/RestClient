@@ -19,16 +19,13 @@ public class Project {
 		return cost;
 	}
 
-	public void setCost(Double cost) {
-		this.cost = cost;
-	}
-
 	public Long getOwnerId() {
 		return ownerId;
 	}
 
 	public void seOwnertId(Long ownerId) {
 		this.ownerId = ownerId;
+		calcCost();
 	}
 
 	public Long getForks() {
@@ -37,6 +34,7 @@ public class Project {
 
 	public void setForks(Long forks) {
 		this.forks = forks;
+		calcCost();
 	}
 
 	public Long getWatchers() {
@@ -45,6 +43,7 @@ public class Project {
 
 	public void setWatchers(Long watchers) {
 		this.watchers = watchers;
+		calcCost();
 	}
 
 	public Long getOpenIssues() {
@@ -53,6 +52,7 @@ public class Project {
 
 	public void setOpenIssues(Long openIssues) {
 		this.openIssues = openIssues;
+		calcCost();
 	}
 
 	public Long getSize() {
@@ -61,6 +61,7 @@ public class Project {
 
 	public void setSize(Long size) {
 		this.size = size;
+		calcCost();
 	}
 
 	public String getLanguage() {
@@ -69,6 +70,7 @@ public class Project {
 
 	public void setLanguage(String language) {
 		this.language = language;
+		calcCost();
 	}
 
 	public Date getUpdatedAt() {
@@ -77,6 +79,7 @@ public class Project {
 
 	public void setUpdatedAt(Date updatedAt) {
 		this.updatedAt = updatedAt;
+		calcCost();
 	}
 
 	public String getFullName() {
@@ -106,7 +109,7 @@ public class Project {
 		return String.format("Project [Cost = %.2f, Name = '%s']", cost, fullName);
 	}
 
-	public boolean diffDate(Date updatedAt, Date currDate) {
+	private boolean diffDate(Date updatedAt, Date currDate) {
 		Calendar cal1 = Calendar.getInstance();
 		Calendar cal2 = Calendar.getInstance();
 
@@ -132,7 +135,7 @@ public class Project {
 			cost -= openIssues;
 		}
 
-		if (ownerId % 1 == 0) {
+		if ((ownerId.longValue()&1L) != 0) {
 			cost -= 30;
 		}
 
