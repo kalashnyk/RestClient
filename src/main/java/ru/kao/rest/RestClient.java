@@ -27,7 +27,7 @@ public class RestClient {
 		while (totalItems > 0) {
 			try {
 				JSONObject variants = RestService
-						.getJSON(String.format("/search/repositories?q=%s&page=%s", query, page));
+						.getJSON(String.format("/search/repositories?q=%s&per_page=100&page=%s", query, page));
 
 				Long totalCount = (Long) variants.get("total_count");
 

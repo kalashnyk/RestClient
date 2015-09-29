@@ -23,23 +23,15 @@ public class RestService {
 	public static int requestCount = 0;
 	public static long lastRequestTime = System.currentTimeMillis();
 
-	public static JSONObject getJSON(String request) throws RESTException, ParseException, MalformedURLException, IOException,
-			InterruptedException, net.minidev.json.parser.ParseException {
+	public static JSONObject getJSON(String request) throws RESTException, ParseException, MalformedURLException,
+			IOException, InterruptedException, net.minidev.json.parser.ParseException {
 		String jsonString = getContent(request);
 		return (JSONObject) PARSER.parse(jsonString);
 	}
 
-	public static String getContent(String request) throws RESTException, MalformedURLException, IOException, InterruptedException {
-		if (requestCount == 10) {
-			long currentTime = System.currentTimeMillis();
-			long diff = currentTime - lastRequestTime;
-			if (diff < 60000) {
-				Thread.sleep(60000 - diff);
-			}
-			lastRequestTime = System.currentTimeMillis();
-			requestCount = 0;
-		}
-
+	public static String getContent(String request)
+			throws RESTException, MalformedURLException, IOException, InterruptedException {
+		
 		URL url = new URL(SERVER + request);
 		URLConnection connection = url.openConnection();
 		HttpURLConnection httpConnection = (HttpURLConnection) connection;
